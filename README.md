@@ -1,6 +1,6 @@
 # Animal_Recognition_TF
 
-A basic python project developed in PyCharm to experiment around with the basics of Tensorboard, ImageNet pretrained models and ConvNets. The dataset used is the animal faces dataset provided by UC Irvine's Machine Learning program.
+A basic python project developed in PyCharm to experiment around with the basics of Tensorboard, ImageNet pretrained models and ConvNets. The dataset used is the animal faces dataset provided by this link https://www.kaggle.com/alessiocorrado99/animals10#OIP---lAIbDlHKmejDpqrXq6vAAAAA.jpeg
 
 ### Prerequisites
 
