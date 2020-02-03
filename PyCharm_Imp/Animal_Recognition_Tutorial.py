@@ -234,14 +234,19 @@ import tensorflow_core as tf
 
 input_shape = (224, 224, 3)
 model = tf.keras.Sequential()
-model.add(tf.keras.layers.Conv2D(32, kernel_size=(5,5), input_shape=input_shape))
-model.add(tf.keras.layers.MaxPooling2D(pool_size=(2,2)))
+model.add(tf.keras.layers.Conv2D(80, kernel_size=(5,5), input_shape=input_shape))
 model.add(tf.keras.layers.Conv2D(32, kernel_size=(3,3), input_shape=input_shape))
+model.add(tf.keras.layers.MaxPooling2D(pool_size=(2,2)))
+model.add(tf.keras.layers.Conv2D(80, kernel_size=(3,3), input_shape=input_shape))
+model.add(tf.keras.layers.Conv2D(32, kernel_size=(1,1), input_shape=input_shape))
+model.add(tf.keras.layers.MaxPooling2D(pool_size=(2,2)))
+model.add(tf.keras.layers.Conv2D(80, kernel_size=(5,5), input_shape=input_shape))
 model.add(tf.keras.layers.Conv2D(32, kernel_size=(1,1), input_shape=input_shape))
 model.add(tf.keras.layers.MaxPooling2D(pool_size=(2,2)))
 model.add(tf.keras.layers.Flatten())
-model.add(tf.keras.layers.Dense(128, activation='relu'))
 model.add(tf.keras.layers.Dense(68, activation='relu'))
+model.add(tf.keras.layers.Dense(48, activation='relu'))
+model.add(tf.keras.layers.Dense(39, activation='relu'))
 model.add(tf.keras.layers.Dense(10, activation='softmax'))
 
 model.compile(optimizer='adam',
