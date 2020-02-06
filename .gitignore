@@ -1,1 +1,4 @@
 PyCharm_Imp/venv/
+*.h5
+*.tflite
+*.pb
