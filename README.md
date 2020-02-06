@@ -142,11 +142,11 @@ for f in list_ds.take(5):
   print(f.numpy())
 ```
 
-    b'animals/chicken/OIP-ipmrdC3vai2nRq29JjRRYAHaFj.jpeg'
-    b'animals/spider/OIP-68GOEkKdJausgJ9Jn9ng2QHaE7.jpeg'
-    b'animals/chicken/OIP-9pI6oiTbvQWEk4j3LEd3vAHaHt.jpeg'
-    b'animals/cat/980.jpeg'
-    b'animals/spider/OIP-vEoiZNkceJgW7PEjWswAvAHaIM.jpeg'
+    b'animals/cat/287.jpeg'
+    b'animals/chicken/OIP-93ZdgDE_h_SoeFcQmTU9rgHaFg.jpeg'
+    b'animals/horse/OIP-3H-2tSYH9Ip5z5KQqRG9lAHaLH.jpeg'
+    b'animals/dog/OIP-IDTZG94vfrKm_xxqofkIvAHaEN.jpeg'
+    b'animals/spider/OIP-T6qc_VtP6VSpgDg8l08QUwHaF7.jpeg'
 
 
 
@@ -220,7 +220,85 @@ mnist_dataset = mnist_dataset.shuffle(buffer_size=1000).batch(32)
     * The first (-1) identifies the image index in the batch while the last (1) is to add a bias value for training and predictions
 
 ## 1. Pre-processing and Data Augmentation
-* This still needs to be completed
+
+* Data Augmentation is key in machine learning projects in order to **reduce overfitting** and help the system make accurate predictions
+* This also greatly reduces the amount of data required to train the system
+    * Instead of getting more images of a cat for example, reduce scales, alter the color, or rotate an original image to generate variants that can improve the quality of your model
+* Tensorflow makes this process easy using [tf.image](https://www.tensorflow.org/api_docs/python/tf/image) with has a ton of methods, some of which I will demo here
+
+
+```python
+import tensorflow as tf
+
+test_image = train_images[0] # Set a test image for testing the transformations
+
+transform_names = [] # Storing the name of the transformations
+transform_images = [] # Storing the images
+```
+
+
+```python
+# Central Cropping -----------------------------------------------------------------
+image = tf.image.central_crop(test_image, central_fraction=0.77)
+
+resized = tf.image.resize(image,[28,28]) # Resize the image to the original dimensions
+transform_images.append(resized)
+transform_names.append("Central Cropping")
+
+# Flip an Image -----------------------------------------------------------------
+image = tf.image.flip_left_right(test_image)
+image1 = tf.image.flip_up_down(test_image)
+transform_images.append(tf.image.resize(image,[28,28]))
+transform_images.append(tf.image.resize(image1,[28,28]))
+transform_names.append("Left/Right")
+transform_names.append("Up/Down")
+
+# Rotate an Image -----------------------------------------------------------------
+image = tf.image.rot90(test_image, k=1)
+image1 = tf.image.rot90(test_image, k=2)
+image2 = tf.image.rot90(test_image, k=3)
+transform_images.append(tf.image.resize(image,[28,28]))
+transform_images.append(tf.image.resize(image1,[28,28]))
+transform_images.append(tf.image.resize(image2,[28,28]))
+transform_names.append("90 Degrees")
+transform_names.append("180 Degrees")
+transform_names.append("270 Degrees")
+```
+
+Now that we have performed the transformations on the images, we can display all the images in a batch view and see a visualization of the transformations
+
+
+```python
+import matplotlib.pyplot as plt
+
+func, axisarray = plt.subplots(1,6, figsize=(20,10))
+
+for i in range(0, len(transform_images)):
+    image = tf.reshape(transform_images[i],[28,28]) # Reshape to a 2-d Tensor in order to display
+    label = transform_names[i]
+    axisarray[i].set_title(label)
+    axisarray[i].imshow(image, cmap=plt.cm.binary)
+plt.show()
+```
+
+
+![png](output_19_0.png)
+
+
+* All useful functions in [tf.image](https://www.tensorflow.org/api_docs/python/tf/image):
+    * **random_flip_left_right(image)**
+    * **random_flip_up_down(image)**
+    * **random_hue(image, )**
+    * **flip_left_right(image)**
+    * **adjust_brightness(image, delta)** delta:[0,1]
+    * **adjust_contrast(image, delta)** delta:contrast factor
+    * **adjust_gamma** --> Brightness on image
+    * **crop_and_resize**
+    * **flip_up_down**
+    * **random_brightness**
+    * **random_contrast**
+    * **random_crop**
+    * **rot90(image, k)** k:number of 90 degree rotations COUNTERCLOCKWISE
 
 ## 2. Experiment with ILSVRC pre-trained models
 * Now we have a completed dataset, the next step is to mess around with some of the basic models from the ImageNet Large Scale Visual Recognition Challenge, a competition that standardized basic CV models for use in the industry. It ran until the models produced achieved accuracy better than a human.
@@ -360,7 +438,7 @@ for image, label in mnist_dataset.take(1):
 ```
 
     Image shape:  (32, 28, 28, 1)  --> (batch_size, image_size[0], image_size[1], bias_size})
-    Label:  [8 7 0 6 2 0 0 6 4 7 1 1 6 4 7 2 9 6 2 4 3 2 1 5 9 5 5 9 7 5 7 9] <dtype: 'uint8'>
+    Label:  [9 5 8 8 5 2 9 0 7 3 1 4 3 3 5 6 9 2 7 6 9 6 9 6 2 7 9 5 0 3 5 3] <dtype: 'uint8'>
 
 
 * Now we can fit the model to our data
@@ -397,23 +475,23 @@ model.fit(mnist_dataset, epochs=5, verbose=1)
 print(model.summary()) # We can get a description of the model after training
 ```
 
-    Model: "sequential_1"
+    Model: "sequential"
     _________________________________________________________________
     Layer (type)                 Output Shape              Param #   
     =================================================================
-    conv2d_5 (Conv2D)            (None, 24, 24, 32)        832       
+    conv2d (Conv2D)              (None, 24, 24, 32)        832       
     _________________________________________________________________
-    conv2d_6 (Conv2D)            (None, 22, 22, 32)        9248      
+    conv2d_1 (Conv2D)            (None, 22, 22, 32)        9248      
     _________________________________________________________________
-    conv2d_7 (Conv2D)            (None, 22, 22, 32)        1056      
+    conv2d_2 (Conv2D)            (None, 22, 22, 32)        1056      
     _________________________________________________________________
-    max_pooling2d_3 (MaxPooling2 (None, 11, 11, 32)        0         
+    max_pooling2d (MaxPooling2D) (None, 11, 11, 32)        0         
     _________________________________________________________________
-    conv2d_8 (Conv2D)            (None, 9, 9, 32)          9248      
+    conv2d_3 (Conv2D)            (None, 9, 9, 32)          9248      
     _________________________________________________________________
-    conv2d_9 (Conv2D)            (None, 9, 9, 32)          1056      
+    conv2d_4 (Conv2D)            (None, 9, 9, 32)          1056      
     _________________________________________________________________
-    max_pooling2d_4 (MaxPooling2 (None, 4, 4, 32)          0         
+    max_pooling2d_1 (MaxPooling2 (None, 4, 4, 32)          0         
     _________________________________________________________________
     flatten (Flatten)            (None, 512)               0         
     _________________________________________________________________
@@ -432,19 +510,94 @@ print(model.summary()) # We can get a description of the model after training
 
 * An accuracy of 89% is not awful, but we can improve this using optimizers, loss functions, and callbacks (which is related to the deployment of Tensorboard in section 4)
 
-### Optimizers <Page 100>
-* As we all learned in Data Science, Optimizers are a critical part of any adaptive algorithm, there are a few common Optimizers used in Computer Vision that can enable us to develop better applications, namely:
-    * 
-    
-### Loss Functions https://machinelearningmastery.com/loss-and-loss-functions-for-training-deep-learning-neural-networks/
-*https://arxiv.org/abs/1511.08861
+### Optimizers
+* As we all learned in Data Science, Optimizers are a critical part of any adaptive algorithm, there are a few common Optimizers used in [Tensorflow](https://www.tensorflow.org/api_docs/python/tf/keras/optimizers) applications:
+    * <mark>**tf.keras.optimizers.Adadelta**</mark> (Adaptive Learning Rate)
+        * Prevents learning rate from getting too low to learn
+    * **tf.keras.optimizers.Adagrad** (Adaptive Gradient)
+        * Auto decrease learning rate for linked parameters, maintain high LR for unlinked
+    * <mark>**tf.keras.optimizers.Adam**</mark> (Adaptive Momentum)
+        * Keeps track of previous momentum values to create 'perfect' learning rate
+    * **tf.keras.optimizers.Adamax**
+        * Ignores LR close to 0, resistant to noise in algorithms (Good for embeddings)
+    * **tf.keras.optimizers.Ftrl** (Follow the Regularized Leader)
+        * Good for sequential training --> Online training
+    * **tf.keras.optimizers.Nadam** (Adaptive Momentum + Nesterov Algorithm)
+        * Better momentum calculations than Adam
+    * **tf.keras.optimizers.RMSprop** (Developed by Hinton)
+        * Prevent vanishing learning rate
+    * <mark>**tf.keras.optimizers.SGD**</mark>
+        * Classic Stochastic (Random) Gradient Descent Algorithm
+* Notes: **Nesterov Adaptive Gradient** --> A more robust form of momentum calculations
 
-### Callbacks https://keras.io/callbacks/
+### Loss Functions
+* Cross-Entropy/Log-Loss: The probability calculations between classes
+    * <mark>**BinaryCrossentropy**</mark>: Two classes
+    * **CategoricalCrossentropy**: **Only used w/ One-Hot** Loss between labels & predictions
+* **CategoricalHinge**: Hinge function with Categorical capabilities
+* **CosineSimilarity**: [Cosine similarity](https://en.wikipedia.org/wiki/Cosine_similarity) calculation 
+* **Huber**: Less sensitive to outliars in a dataset
+* **MeanAbsoluteError, MeanAbsolutePercentageError, MeanSquaredError, MeanSquaredLogarithmicError**: These are all the same in ML and Data Science applications
+* <mark>**SparseCategoricalCrossentropy**</mark>: Like CategoricalCrossentropy but for labels!
+
+### Callbacks
+* What are callbacks? Glad you asked, a group of various functions that can be applied during the training process. For example:
+    * Stats during training
+        * **ProgbarLogger()**: Get some metrics during training
+        * **History()**: Save model training historical data
+        * **RemoteMonitor()**: Stream data to a server for remote model training
+        * <mark>**TensorBoard()**</mark>: More info on this is covered below
+    * States of variables
+        * **ModelCheckpoint()**: You can save the model as a file after every epoch!
+        * <mark>**EarlyStopping()**</mark>: Stop training when the model quality doesn't really improve anymore
+    * Modify training procedure
+        * **TerminateOnNaN()**: Stop training when the loss value is no longer a value
+        
+### Implementing the new Callbacks, Losses, and Optimizers
+* Below is an example
+
+
+```python
+import tensorflow.keras as keras 
+
+model.compile(optimizer='adam',
+              loss=tf.keras.losses.SparseCategoricalCrossentropy(), 
+              metrics=['accuracy', 'mae', tf.keras.metrics.CategoricalAccuracy()])
+
+# min_delta --> Minimum change for there to be a "quality improvement"
+# patience --> # of epochs w/ no improvement
+early_stopping = keras.callbacks.EarlyStopping(monitor='accuracy', min_delta=0, patience=0, 
+                                        verbose=0, mode='auto', 
+                                        baseline=None, restore_best_weights=False)
+
+csv_logging = keras.callbacks.CSVLogger('log.csv')
+
+model.fit(mnist_dataset, epochs=5, verbose=1, callbacks=[early_stopping, csv_logging])
+
+```
+
+    Train for 1875 steps
+    Epoch 1/5
+    1875/1875 [==============================] - 56s 30ms/step - loss: 0.6471 - accuracy: 0.7881 - mae: 4.4200 - categorical_accuracy: 0.1024
+    Epoch 2/5
+    1875/1875 [==============================] - 56s 30ms/step - loss: 0.4112 - accuracy: 0.8523 - mae: 4.4200 - categorical_accuracy: 0.1022
+    Epoch 3/5
+    1875/1875 [==============================] - 56s 30ms/step - loss: 0.3742 - accuracy: 0.8652 - mae: 4.4200 - categorical_accuracy: 0.1018
+    Epoch 4/5
+    1875/1875 [==============================] - 56s 30ms/step - loss: 0.3491 - accuracy: 0.8743 - mae: 4.4200 - categorical_accuracy: 0.1018
+    Epoch 5/5
+    1875/1875 [==============================] - 59s 31ms/step - loss: 0.3253 - accuracy: 0.8823 - mae: 4.4200 - categorical_accuracy: 0.1005
+
+
+
+
+
+    <tensorflow.python.keras.callbacks.History at 0x139021b90>
+
 
 
 ## 4. Tensorboard
 * Tensorboard is a visualization and measurement tool to help the developer improve training, you can read the full docs [here](https://www.tensorflow.org/tensorboard/get_started), but this section will focus on it's integration to a Tensorflow project in python.
-
 
 
 ```python
@@ -464,22 +617,20 @@ import datetime
 log_dir="logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 
 # You need to add a callback while training in order to observe fitting process in Training
-tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+tensorboard_callback = tf.keras.callbacks.TensorBoard(
+    log_dir=log_dir, histogram_freq=1)
+
 %tensorboard --logdir logs/fit
 
 ```
 
 
-    Reusing TensorBoard on port 6006 (pid 12836), started 0:05:33 ago. (Use '!kill 12836' to kill it.)
 
-
-
-
-<iframe id="tensorboard-frame-789505ce848c7bc1" width="100%" height="800" frameborder="0">
+<iframe id="tensorboard-frame-4f5cccac279c1421" width="100%" height="800" frameborder="0">
 </iframe>
 <script>
   (function() {
-    const frame = document.getElementById("tensorboard-frame-789505ce848c7bc1");
+    const frame = document.getElementById("tensorboard-frame-4f5cccac279c1421");
     const url = new URL("/", window.location);
     url.port = 6006;
     frame.src = url;
@@ -488,9 +639,132 @@ tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram
 
 
 
+
+```python
+# model.fit(mnist_dataset, epochs=5, verbose=1, callbacks=[tensorboard_callback])
+# Adding the tensorboard callback to view progress
+```
+
 ## 5. Exporting a model
+
+* What are the different formats?
+
+**.cpkt** (Checkpoint file for the Keras callback --> Saves model weights):
 
 
 ```python
+checkpoint_path = "training/check1.ckpt"
+checkpoint_dir = os.path.dirname(checkpoint_path)
 
+check_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_path,
+                                                 save_weights_only=True,
+                                                 verbose=1)
+
+#model.load_weights(checkpoint_path)
+#model.summary()
 ```
+
+**.h5** (Saves WEIGHTS, CONFIGURATION, OPTIMIZER --> Runs on TF.js, mobile devices)
+
+
+```python
+model.save('model_file.h5')
+#loaded_model = tf.keras.models.load_model('model_file.h5')
+#loaded_model.summary()
+```
+
+**SavedModel** (Specific format for serializing models --> Compatible with Tensorflow Serving)
+
+
+```python
+saved_model_export_dir = 'saved_model_dir/model1'
+model.save(saved_model_export_dir)
+```
+
+**Tensorflow Lite** (This is the most powerful --> Mobile device model loading!)
+
+
+```python
+# Convert the model.
+converter = tf.lite.TFLiteConverter.from_keras_model(model)
+tflite_model = converter.convert()
+open("keras_model.tflite", "wb").write(tflite_model)
+
+# If you saved the model using the SavedModel format like above ^:
+converter = tf.lite.TFLiteConverter.from_saved_model(saved_model_export_dir)
+tflite_model = converter.convert()
+open("saved_model.tflite", "wb").write(tflite_model)
+```
+
+
+
+
+    390748
+
+
+
+### Load the Model and Inference
+
+Now that the model has been trained and saved, it can be loaded using the appropriate method and used for inference
+
+#### Keras Loaded Model in h5
+
+
+```python
+import tensorflow as tf
+
+keras_loaded = tf.keras.models.load_model('model_file.h5')
+```
+
+
+```python
+import numpy as np
+
+index = 10
+
+image = test_images[index].reshape(1,28,28,-1) # Reshape with the bias dimension
+y_true = test_labels[index]
+
+predictions_tensor = keras_loaded.predict(image)
+y_pred = np.argmax(predictions_tensor)
+print(y_pred, y_true)
+```
+
+    4 4
+
+
+#### SavedModel reloading
+
+* The model format here is a little more obscure, view the documented code below to get a thorough walkthrough
+
+
+```python
+import numpy as np
+
+# Load the model from the SavedModel format
+savedmodel_loaded = tf.saved_model.load(saved_model_export_dir+"/")
+
+# You have to load the inference function from the model itself using the "serving_default" key
+inference_function = savedmodel_loaded.signatures["serving_default"]
+
+# Index of the image to test with
+index = 10
+
+# You have to reshape but also convert it to a float32 tensor b/c the inference function uses a tensor
+image = tf.convert_to_tensor(test_images[index].reshape(1,28,28,-1), dtype=tf.float32)
+y_true = test_labels[index]
+
+# Get the predictions tensor
+predictions_tensor = (inference_function(image))
+
+# Convert the predictions tensor to a numpy array
+predictions_numpy_array = predictions_tensor['dense_2'].numpy()[0]
+
+y_pred = np.argmax(predictions_numpy_array)
+print(y_pred, y_true)
+```
+
+    4 4
+
+
+Success! The model has been trained, saved, and loaded into a new model instance we can use for predictions
