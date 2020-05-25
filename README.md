@@ -1,4 +1,4 @@
-# Animal Recognition in Tensorflow
+# Animal Recognition via Tensorflow
 
 * This is a general guide with notes on the implementation of Computer Vision applications via Tensorflow and Python, the dataset I am using for the purposes of this project can be found [here](https://www.kaggle.com/alessiocorrado99/animals10#OIP---lAIbDlHKmejDpqrXq6vAAAAA.jpeg).
 
